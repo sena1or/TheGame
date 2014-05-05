@@ -1,0 +1,22 @@
+<% var title = 'Authentication Example' %>
+<% include head %>
+
+<h1>Register</h1>
+<%- message %>
+Enter your username and password
+Then try accessing <a href="/restricted">/restricted</a>, then authenticate with your login and password.
+<form method="post" action="/register">
+  <p>
+    <label>Username:</label>
+    <input type="text" name="username">
+  </p>
+  <p>
+    <label>Password:</label>
+    <input type="password" name="password">
+  </p>
+  <p>
+    <input type="submit" value="Register">
+  </p>
+</form>
+
+<% include foot %>

@@ -1,0 +1,43 @@
+{
+  "name": "TheGame",
+  "description": "Inforamtion system",
+  "version": "0.0.1",
+  "author": "",
+  "contributors": [
+    {
+      "name": "Mikhail Belous",
+      "email": "monsterofcs@gmail.com"
+    },
+    {
+      "name": "Gleb Efimov",
+      "email": "sena1or@gmail.com"
+    }
+  ],
+  "dependencies": {
+    "parseurl": "1.0.1",
+    "cookie": "0.1.2",
+    "buffer-crc32": "0.2.1",
+    "cookie-signature": "1.0.3",
+    "debug": ">= 0.7.3 < 1"
+  },
+  "devDependencies": {
+    "body-parser": "1.0.2",
+    "ejs": "~1.0.0",
+    "express-session": "1.0.3",
+    "cookie-parser": "1.0.1"
+  },
+  "keywords": [
+    "poker",
+    "blackjack",
+    "whores"
+  ],
+  "repository": "git://github.com/sena1or/TheGame",
+  "scripts": {
+    "prepublish": "npm prune",
+    "test": "make test"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "license": "MIT"
+}

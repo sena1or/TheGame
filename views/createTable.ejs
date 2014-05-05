@@ -1,0 +1,16 @@
+<% var title = 'Create Table' %>
+<% include head %>
+
+<h1>Create</h1>
+<%- message %>
+<form method="post" action="/createTable">
+  <p>
+    <label>Stake:</label>
+    <input type="number" name="stake">
+  </p>
+  <p>
+    <input type="submit" value="Create Table">
+  </p>
+</form>
+
+<% include foot %>
