@@ -8,6 +8,9 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var url = require("url");	
+var USER = 0;
+var MODERATOR = 1;
+var ADMIN = 2;
 
 var app = module.exports = express();
 
@@ -43,7 +46,7 @@ var users = {};
 // and hash the password ('foobar' is the pass here)
 
 
-function createUser(Uname, pass)
+function createUser(Uname, pass, access_)
 {
   users[Uname] = {name: Uname };
   hash(pass, function(err, salt, hash){
@@ -52,10 +55,13 @@ function createUser(Uname, pass)
     users[Uname].salt = salt;
     users[Uname].hash = hash;
     users[Uname].money = 100;
+    users[Uname].access = access_;
   });    
 }
 
-createUser('test','test');
+createUser('test','test', USER);
+createUser('moder','moder', MODERATOR);
+createUser('admin','admin',ADMIN);
 
 // Authenticate using our plain-object database of doom!
 
@@ -74,22 +80,25 @@ function authenticate(name, pass, fn) {
   });
 }
 
-function restrict(req, res, next) {
-  if (req.session.user) {
-    next();
-    res.send(req.session.user.name + " $= " + req.session.user.money);
-  } else {
-    req.session.error = 'Access denied!';
+function restrict(req, res, access_level, next ) {
+  console.log('testing %s', access_levels)
+  if (!req.session.user) {
+    res.send('Login please');
     res.redirect('/login');
+  } 
+  else  if(req.session.user.access < access_level){
+    res.send('Access denied!');
+    res.redirect('/login');
+  }
+  else
+  {
+    next();
+    //res.send(req.session.user.name + " $= " + req.session.user.money);
   }
 }
 
 app.get('/', function(req, res){
   res.redirect('login');
-});
-
-app.get('/restricted', restrict, function(req, res){
-  //res.send('Wahoo! restricted area, click to <a href="/logout">logout</a>');
 });
 
 app.get('/logout', function(req, res){
@@ -123,9 +132,8 @@ app.post('/login', function(req, res){
         res.redirect('back');
       });
     } else {
-      req.session.error = 'Authentication failed, please check your '
-        + ' username and password.'
-        + ' (use "tj" and "foobar")';
+      alert('Authentication failed, please check your '
+        + ' username and password.');
       res.redirect('login');
     }
   });
@@ -142,9 +150,20 @@ app.post('/register', function(req, res){
   res.send('User ' + Uname + ' password ' + pass);
 });
 
+app.get('/admin', function(req, res){
+  access_level = ADMIN;
+  restrict(req, res, access_level, function(req,ress) { 
+    res.send('Wahoo! your are admin, click to <a href="/logout">logout</a>');
+  });
+});
+
 app.get('/createTable', function(req, res){
-  res.render('createTable');
-}); 
+  access_level = MODERATOR;
+  restrict(req, res, access_level, function(req,ress) { 
+    res.rendrer('createTable');
+  });
+});
+
 app.post('/createTable', function(req, res){
   // Store the user's primary key
   // in the session store to be retrieved,
@@ -154,8 +173,11 @@ app.post('/createTable', function(req, res){
 });
 
 app.get('/table', function(req, res){
-  res.render('table');
-}); 
+  access_level = USER;
+  restrict(req, res, access_level, function(req,ress) { 
+    res.rendrer('table');
+  });
+});
 app.post('/table', function(req, res){
   // Store the user's primary key
   // in the session store to be retrieved,
