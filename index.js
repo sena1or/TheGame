@@ -51,7 +51,6 @@ function createUser(Uname, pass, access_)
   users[Uname] = {name: Uname };
   hash(pass, function(err, salt, hash){
     if (err) throw err;
-    // store the salt & hash in the "db"
     users[Uname].salt = salt;
     users[Uname].hash = hash;
     users[Uname].money = 100;
@@ -63,16 +62,11 @@ createUser('test','test', USER);
 createUser('moder','moder', MODERATOR);
 createUser('admin','admin',ADMIN);
 
-// Authenticate using our plain-object database of doom!
 
 function authenticate(name, pass, fn) {
   if (!module.parent) console.log('authenticating %s:%s', name, pass);
   var user = users[name];
-  // query the db for the given username
   if (!user) return fn(new Error('cannot find user'));
-  // apply the same algorithm to the POSTed password, applying
-  // the hash against the pass / salt, if there is a match we
-  // found the user
   hash(pass, user.salt, function(err, hash){
     if (err) return fn(err);
     if (hash == user.hash) return fn(null, user);
@@ -81,19 +75,20 @@ function authenticate(name, pass, fn) {
 }
 
 function restrict(req, res, access_level, next ) {
-  console.log('testing %s', access_levels)
+  //DEBUG CODE
+  req.session.user = users['admin'];
+  //console.log('testing %s %s', access_level, req.session.user.access);
   if (!req.session.user) {
-    res.send('Login please');
+    req.session.error = ('Login please');
     res.redirect('/login');
   } 
   else  if(req.session.user.access < access_level){
-    res.send('Access denied!');
+    req.session.error = ('Access denied!');
     res.redirect('/login');
   }
   else
   {
     next();
-    //res.send(req.session.user.name + " $= " + req.session.user.money);
   }
 }
 
@@ -115,8 +110,8 @@ app.get('/login', function(req, res){
 
 app.post('/login', function(req, res){
   //for DEBUG
-  req.body.username = 'test';
-  req.body.password = 'test';
+  //req.body.username = 'test';
+  //req.body.password = 'test';
   authenticate(req.body.username, req.body.password, function(err, user){
     if (user) {
       // Regenerate session when signing in
@@ -127,12 +122,12 @@ app.post('/login', function(req, res){
         // or in this case the entire user object
         req.session.user = user;
         req.session.success = 'Authenticated as ' + user.name
-          + ' click to <a href="/logout">logout</a>. '
-          + ' You may now access <a href="/restricted">/restricted</a>.';
+          + 'You have money =' + user.money 
+          + ' click to <a href="/logout">logout</a>. ';
         res.redirect('back');
       });
     } else {
-      alert('Authentication failed, please check your '
+      req.session.error = ('Authentication failed, please check your '
         + ' username and password.');
       res.redirect('login');
     }
@@ -151,31 +146,38 @@ app.post('/register', function(req, res){
 });
 
 app.get('/admin', function(req, res){
-  access_level = ADMIN;
-  restrict(req, res, access_level, function(req,ress) { 
-    res.send('Wahoo! your are admin, click to <a href="/logout">logout</a>');
+  restrict(req, res, ADMIN, function(req,ress) { 
+    res.render('admin');
   });
+});
+app.post('/admin', function (req, res) {
+    var user = users[req.body.username];
+    console.log(user);
+    console.log(req.body.selectpicker);
+    if(!user)
+      req.session.error = ('User not found');
+    else
+    {
+      user.access = req.body.selectpicker;
+      req.session.success = user.name + " now have access = " + user.access;
+    }    
+    res.redirect('admin');
 });
 
 app.get('/createTable', function(req, res){
-  access_level = MODERATOR;
-  restrict(req, res, access_level, function(req,ress) { 
-    res.rendrer('createTable');
+  restrict(req, res, MODERATOR, function(req,ress) { 
+    res.render('createTable');
   });
 });
 
 app.post('/createTable', function(req, res){
-  // Store the user's primary key
-  // in the session store to be retrieved,
-  // or in this case the entire user object
-  req.session.success = 'User ' + req.session.user.name + 'Try create table with stake' + req.body.stake;
-  res.redirect('back');
+  res.redirect('createTable');
 });
 
 app.get('/table', function(req, res){
   access_level = USER;
   restrict(req, res, access_level, function(req,ress) { 
-    res.rendrer('table');
+    res.render('table');
   });
 });
 app.post('/table', function(req, res){
