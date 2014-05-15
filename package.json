@@ -6,7 +6,7 @@
   "contributors": [
     {
       "name": "Mikhail Belous",
-      "email": "monsterofcs@gmail.com"
+      "email": "belous.mikhail@gmail.com"
     },
     {
       "name": "Gleb Efimov",
@@ -24,7 +24,8 @@
     "body-parser": "1.0.2",
     "ejs": "~1.0.0",
     "express-session": "1.0.3",
-    "cookie-parser": "1.0.1"
+    "cookie-parser": "1.0.1",
+    "jade": "*"
   },
   "keywords": [
     "poker",

@@ -7,10 +7,11 @@ var hash = require('./pass').hash;
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
-var url = require("url");	
+var url = require("url");
 var USER = 0;
 var MODERATOR = 1;
 var ADMIN = 2;
+require('jade');
 
 var app = module.exports = express();
 
@@ -140,7 +141,7 @@ app.get('/register', function(req, res){
 app.post('/register', function(req, res){
   Uname = req.body.username;
   pass = req.body.password;
-  createUser(Uname, pass);
+  createUser(Uname, pass, USER);
   if (!module.parent) console.log('testing %s:%s', Uname, pass);
   res.send('User ' + Uname + ' password ' + pass);
 });
@@ -175,17 +176,18 @@ app.post('/createTable', function(req, res){
 });
 
 app.get('/table', function(req, res){
-  access_level = USER;
-  restrict(req, res, access_level, function(req,ress) { 
+  restrict(req, res, USER, function(req,ress) { 
     res.render('table');
   });
 });
 app.post('/table', function(req, res){
-  // Store the user's primary key
-  // in the session store to be retrieved,
-  // or in this case the entire user object
-  req.session.success = 'User ' + req.session.user.name + 'Try to join' + JSON.stringify(queryAsObject);
   res.redirect('back');
+});
+
+app.get('/users', function(req, res){
+  restrict(req, res, USER, function(req,ress) { 
+    res.render('users.jade', { users: users });
+  });
 });
 
 if (!module.parent) {

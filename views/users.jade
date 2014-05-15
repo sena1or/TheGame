@@ -1,0 +1,18 @@
+include head.ejs
+style.
+  body {
+    padding: 50px;
+    font: 16px "Helvetica Neue", Helvetica;
+  }
+
+table
+  thead
+    tr
+      th Name
+      th Coins
+      th AccessLevel
+  for pet in users
+    tr
+      td= pet.name
+      td= pet.money
+      td= pet.access

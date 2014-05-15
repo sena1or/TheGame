@@ -5,8 +5,16 @@
 <%- message %>
 <form method="post" action="/createTable">
   <p>
+    <label>Table name:</label>
+    <input type="text" name="tablename">
+  </p>
+  <p>
     <label>Stake:</label>
     <input type="number" name="stake">
+  </p>
+  <p>
+    <label>Timeout:</label>
+    <input type="number" name="timeout">
   </p>
   <p>
     <input type="submit" value="Create Table">
