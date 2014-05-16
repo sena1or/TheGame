@@ -8,9 +8,13 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var url = require("url");
+
 var USER = 0;
 var MODERATOR = 1;
 var ADMIN = 2;
+
+var MAX_TABLE_CAPACITY = 6;
+
 require('jade');
 
 var app = module.exports = express();
@@ -28,7 +32,7 @@ app.use(session());
 
 // Session-persisted message middleware
 
-app.use(function(req, res, next){
+app.use(function(req, res, next) {
   var err = req.session.error;
   var msg = req.session.success;
   delete req.session.error;
@@ -39,9 +43,10 @@ app.use(function(req, res, next){
   next();
 });
 
-// dummy database
+// dummy databases
 
 var users = {};
+var tables = {};
 
 // when you create a user, generate a salt
 // and hash the password ('foobar' is the pass here)
@@ -57,6 +62,14 @@ function createUser(Uname, pass, access_)
     users[Uname].money = 100;
     users[Uname].access = access_;
   });    
+}
+
+function createTable(Tname, stake, timeout)
+{
+    tables[Tname] = { id: Tname };
+    tables[Tname].stake = stake;
+    tables[Tname].timeout = timeout;
+    tables[Tname].counter = 0;
 }
 
 createUser('test','test', USER);
@@ -83,15 +96,20 @@ function restrict(req, res, access_level, next ) {
     req.session.error = ('Login please');
     res.redirect('/login');
   } 
-  else  if(req.session.user.access < access_level){
+  else  if(req.session.user.access < access_level) {
     req.session.error = ('Access denied!');
     res.redirect('/login');
   }
   else
   {
-    next();
+    next(req);
   }
 }
+
+setTimeout(function()
+{
+    
+}, 1000)
 
 app.get('/', function(req, res){
   res.redirect('login');
@@ -172,16 +190,30 @@ app.get('/createTable', function(req, res){
 });
 
 app.post('/createTable', function(req, res){
-  res.redirect('createTable');
+  if (req.body.stake < 0 || req.body.timeout < 11)
+  {
+      req.session.error = ('Stake should be > 0 and Timeout > 10');
+      res.redirect('back');
+  }
+  
+  else
+  {
+      createTable(req.body.tablename, req.body.stake, req.body.timeout);
+  }
 });
 
-app.get('/table', function(req, res){
+app.get('/tables', function(req, res) {
+    res.render('tables.jade', {tables: tables});
+})
+
+app.get('/table:id', function(req, res){
   restrict(req, res, USER, function(req,ress) { 
-    res.render('table');
+    res.render('table', {tableId : req.params.id});
   });
 });
+
 app.post('/table', function(req, res){
-  res.redirect('back');
+  console.log('Code ' + req);
 });
 
 app.get('/users', function(req, res){
