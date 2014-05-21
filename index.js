@@ -47,6 +47,7 @@ app.use(function(req, res, next) {
 
 var users = {};
 var tables = {};
+var support = Array();
 
 // when you create a user, generate a salt
 // and hash the password ('foobar' is the pass here)
@@ -199,6 +200,8 @@ app.post('/createTable', function(req, res){
   else
   {
       createTable(req.body.tablename, req.body.stake, req.body.timeout);
+      req.session.success = 'Thank you for creating table';
+      res.redirect('back');
   }
 });
 
@@ -219,6 +222,37 @@ app.post('/table', function(req, res){
 app.get('/users', function(req, res){
   restrict(req, res, USER, function(req,ress) { 
     res.render('users.jade', { users: users });
+  });
+});
+
+app.get('/support', function(req, res){
+  restrict(req, res, USER, function(req,ress) { 
+    res.render('support');
+  });
+});
+
+app.post('/support', function(req, res){
+  if (req.body.message == '')
+  {
+      req.session.error = 'message should be non empty';
+      res.redirect('back');
+  }
+  
+  else
+  {
+      req.session.success = 'Thank you we will write you back as soon as possible';
+      var out = {};
+      out.username = req.session.user.name;
+      out.email = req.body.email;
+      out.message = req.body.message;
+      support.push(out);
+      res.redirect('back');
+  }
+});
+
+app.get('/supportread', function(req, res){
+  restrict(req, res, MODERATOR, function(req,ress) { 
+    res.render('supportread.jade', { support: support });
   });
 });
 

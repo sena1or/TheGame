@@ -1,0 +1,20 @@
+<% var title = 'Create Table' %>
+<% include head %>
+
+<h1>Create</h1>
+<%- message %>
+<form method="post" action="/support">
+  <p>
+    <label>Input your message to admins:</label>
+    <input type="text" name="message">
+  </p>
+  <p>
+    <label>Email(optional)</label>
+    <input type="text" name="email">
+  </p>
+  <p>
+    <input type="submit" value="Send message">
+  </p>
+</form>
+
+<% include foot %>

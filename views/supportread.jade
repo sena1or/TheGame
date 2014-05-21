@@ -1,0 +1,18 @@
+include head.ejs
+style.
+  body {
+    padding: 50px;
+    font: 16px "Helvetica Neue", Helvetica;
+  }
+
+table
+  thead
+    tr
+      th UserName
+      th UserMessage
+      th email
+  for message in support
+    tr
+      td= message.username
+      td= message.message
+      td= message.email
