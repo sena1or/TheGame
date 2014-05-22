@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var url = require("url");
-
+var BANED = -1;
 var USER = 0;
 var MODERATOR = 1;
 var ADMIN = 2;
@@ -48,6 +48,11 @@ app.use(function(req, res, next) {
 var users = {};
 var tables = {};
 var support = Array();
+var explain = {}
+explain[-1] = 'baned';
+explain[0] = 'user'
+explain[1] = 'moderator';
+explain[2] = 'admin';
 
 // when you create a user, generate a salt
 // and hash the password ('foobar' is the pass here)
@@ -90,6 +95,7 @@ function createTable(Tname, stake, timeout)
     }, timeout * 1000);
 }
 
+createUser('baned','baned', BANED);
 createUser('test','test', USER);
 createUser('moder','moder', MODERATOR);
 createUser('admin','admin',ADMIN);
@@ -148,6 +154,11 @@ app.post('/login', function(req, res){
   //req.body.password = 'test';
   authenticate(req.body.username, req.body.password, function(err, user){
     if (user) {
+      if (user.access == BANED) {
+	req.session.error = ('You are banned');
+	res.redirect('login');
+	return ;
+      }
       // Regenerate session when signing in
       // to prevent fixation
       req.session.regenerate(function(){
@@ -193,7 +204,7 @@ app.post('/admin', function (req, res) {
     else
     {
       user.access = req.body.selectpicker;
-      req.session.success = user.name + " now have access = " + user.access;
+      req.session.success = user.name + " now have access = " + explain[user.access];
     }    
     res.redirect('admin');
 });
@@ -246,7 +257,7 @@ app.post('/table', function(req, res){
 
 app.get('/users', function(req, res){
   restrict(req, res, USER, function(req,ress) { 
-    res.render('users.jade', { users: users });
+    res.render('users.jade', { users: users, explain: explain});
   });
 });
 
