@@ -71,11 +71,29 @@ function createTable(Tname, stake, timeout)
     tables[Tname].stake = stake;
     tables[Tname].timeout = timeout;
     tables[Tname].counter = 0;
+    tables[Tname].users = Array();
+    setInterval(function()
+    {
+      console.log('Table played %s', Tname); 
+      if(tables[Tname].users.length == 0)
+	console.log('empty table');
+      else
+      {
+	var win = Math.floor(Math.random() * (tables[Tname].users.length));
+	for (i = 0; i < tables[Tname].users.length; i++) 
+	  users[tables[Tname].users[i].name].money -= stake;
+	users[tables[Tname].users[win].name].money += stake * tables[Tname].users.length * 0.99;
+	console.log('win -> %s', tables[Tname].users[win].name); 
+      }
+      tables[Tname].users = Array();
+      
+    }, timeout * 1000);
 }
 
 createUser('test','test', USER);
 createUser('moder','moder', MODERATOR);
 createUser('admin','admin',ADMIN);
+createTable('test',11,10);
 
 
 function authenticate(name, pass, fn) {
@@ -91,7 +109,7 @@ function authenticate(name, pass, fn) {
 
 function restrict(req, res, access_level, next ) {
   //DEBUG CODE
-  req.session.user = users['admin'];
+  //req.session.user = users['admin'];
   //console.log('testing %s %s', access_level, req.session.user.access);
   if (!req.session.user) {
     req.session.error = ('Login please');
@@ -107,10 +125,6 @@ function restrict(req, res, access_level, next ) {
   }
 }
 
-setTimeout(function()
-{
-    
-}, 1000)
 
 app.get('/', function(req, res){
   res.redirect('login');
@@ -206,12 +220,23 @@ app.post('/createTable', function(req, res){
 });
 
 app.get('/tables', function(req, res) {
+  restrict(req, res, USER, function(req,ress) { 
     res.render('tables.jade', {tables: tables});
+  });
 })
 
 app.get('/table:id', function(req, res){
   restrict(req, res, USER, function(req,ress) { 
-    res.render('table', {tableId : req.params.id});
+    if( tables[req.params.id] == null) {
+      req.session.error = ('Stake should be > 0 and Timeout > 10');
+      res.redirect('back');
+    }
+    else
+    {
+      tables[req.params.id].users.push(req.session.user);
+      req.session.success = "You joined the table";
+      res.redirect('back');
+    }
   });
 });
 

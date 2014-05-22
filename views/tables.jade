@@ -4,16 +4,18 @@ style.
     padding: 50px;
     font: 16px "Helvetica Neue", Helvetica;
   }
-
 table
   thead
     tr
       th Name
       th Stake
       th Timeout
+      th Users
   for table in tables
     tr
       td
         a(href='table' + table.id)= table.id
       td= table.stake
       td= table.timeout
+      for user in table.users
+        td= user.name
