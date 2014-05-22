@@ -85,8 +85,6 @@ function createTable(Tname, stake, timeout)
       else
       {
 	var win = Math.floor(Math.random() * (tables[Tname].users.length));
-	for (i = 0; i < tables[Tname].users.length; i++) 
-	  users[tables[Tname].users[i].name].money -= stake;
 	users[tables[Tname].users[win].name].money += stake * tables[Tname].users.length * 0.99;
 	console.log('win -> %s', tables[Tname].users[win].name); 
       }
@@ -239,14 +237,22 @@ app.get('/tables', function(req, res) {
 app.get('/table:id', function(req, res){
   restrict(req, res, USER, function(req,ress) { 
     if( tables[req.params.id] == null) {
-      req.session.error = ('Stake should be > 0 and Timeout > 10');
+      req.session.error = ('No such table');
       res.redirect('back');
     }
     else
     {
-      tables[req.params.id].users.push(req.session.user);
-      req.session.success = "You joined the table";
-      res.redirect('back');
+      if( users[req.session.user.name].money < tables[req.params.id].stake){
+	req.session.error = ('not enough money');
+	res.redirect('back');
+      }
+      else
+      {
+	users[req.session.user.name].money -= tables[req.params.id].stake;
+	tables[req.params.id].users.push(req.session.user);
+	req.session.success = "You joined the table";
+	res.redirect('back');
+      }
     }
   });
 });
