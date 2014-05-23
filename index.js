@@ -23,7 +23,7 @@ var app = module.exports = express();
 
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
-
+app.use(express.static(__dirname + '/public'));
 // middleware
 
 app.use(bodyParser());
@@ -58,7 +58,7 @@ explain[2] = 'admin';
 // and hash the password ('foobar' is the pass here)
 
 
-function createUser(Uname, pass, access_)
+function createUser(Uname, pass, access_, email)
 {
   users[Uname] = {name: Uname };
   hash(pass, function(err, salt, hash){
@@ -67,6 +67,7 @@ function createUser(Uname, pass, access_)
     users[Uname].hash = hash;
     users[Uname].money = 100;
     users[Uname].access = access_;
+    users[Uname].email = email;
   });    
 }
 
@@ -93,10 +94,10 @@ function createTable(Tname, stake, timeout)
     }, timeout * 1000);
 }
 
-createUser('baned','baned', BANED);
-createUser('test','test', USER);
-createUser('moder','moder', MODERATOR);
-createUser('admin','admin',ADMIN);
+createUser('baned','baned', BANED, 'banned@mail.ru');
+createUser('test','test', USER, 'banned@mail.ru');
+createUser('moder','moder', MODERATOR, 'banned@mail.ru');
+createUser('admin','admin',ADMIN, 'banned@mail.ru');
 createTable('test',11,10);
 
 
@@ -112,9 +113,7 @@ function authenticate(name, pass, fn) {
 }
 
 function restrict(req, res, access_level, next ) {
-  //DEBUG CODE
-  //req.session.user = users['admin'];
-  //console.log('testing %s %s', access_level, req.session.user.access);
+  setAccess(req, res)
   if (!req.session.user) {
     req.session.error = ('Login please');
     res.redirect('/login');
@@ -131,7 +130,7 @@ function restrict(req, res, access_level, next ) {
 
 
 app.get('/', function(req, res){
-  res.redirect('login');
+  res.redirect('/login');
 });
 
 app.get('/logout', function(req, res){
@@ -141,9 +140,18 @@ app.get('/logout', function(req, res){
     res.redirect('/');
   });
 });
-
+function setAccess(req, res) {
+  if(req.session.user == null)
+    res.locals.access = -1;
+  else
+    res.locals.access = req.session.user.access;
+}
 app.get('/login', function(req, res){
-  res.render('login');
+  setAccess(req, res)
+  if(req.session.user == null) 
+    res.render('login');
+  else
+    res.redirect('/tables');
 });
 
 app.post('/login', function(req, res){
@@ -178,14 +186,30 @@ app.post('/login', function(req, res){
 });
 
 app.get('/register', function(req, res){
+  setAccess(req, res)
   res.render('register');
 });
 app.post('/register', function(req, res){
+  var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+
   Uname = req.body.username;
   pass = req.body.password;
-  createUser(Uname, pass, USER);
-  if (!module.parent) console.log('testing %s:%s', Uname, pass);
-  res.send('User ' + Uname + ' password ' + pass);
+  email = req.body.email;
+  if(users[Uname] != null) {
+    req.session.error = 'User already exist';
+    res.redirect('back');
+  }
+  else if(!filter.test(email))
+  {
+    req.session.error = 'Invalid email';
+    res.redirect('back');
+  }
+  else
+  {
+    createUser(Uname, pass, USER, email);
+    req.session.success = 'User created';
+    res.redirect('login');
+  }
 });
 
 app.get('/admin', function(req, res){
@@ -230,7 +254,7 @@ app.post('/createTable', function(req, res){
 
 app.get('/tables', function(req, res) {
   restrict(req, res, USER, function(req,ress) { 
-    res.render('tables.jade', {tables: tables});
+    res.render('tables', {tables: tables});
   });
 })
 
@@ -263,7 +287,8 @@ app.post('/table', function(req, res){
 
 app.get('/users', function(req, res){
   restrict(req, res, USER, function(req,ress) { 
-    res.render('users.jade', { users: users, explain: explain});
+     console.log(users);
+    res.render('users', { users: users, explain: explain});
   });
 });
 
@@ -294,7 +319,7 @@ app.post('/support', function(req, res){
 
 app.get('/supportread', function(req, res){
   restrict(req, res, MODERATOR, function(req,ress) { 
-    res.render('supportread.jade', { support: support });
+    res.render('supportread', { support: support});
   });
 });
 

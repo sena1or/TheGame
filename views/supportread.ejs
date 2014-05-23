@@ -1,0 +1,24 @@
+<% var title = 'User list' %>
+<% include head %>
+
+<table>
+<tr>
+  <th> Whiner </th>
+  <th> Message </th>
+  <th> Email </th>
+</tr>
+
+<% for (user in support) { %>
+      <tr>
+        <td>
+            <%=  support[user].username %>
+        </td>
+        <td>
+            <%=  support[user].message %>
+        </td>
+        <td>
+            <%=  support[user].email %>
+        </td>
+      </tr>
+    <% } %>
+<table>

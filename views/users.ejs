@@ -1,0 +1,28 @@
+<% var title = 'User list' %>
+<% include head %>
+
+<table>
+<tr>
+  <th> Name </th>
+  <th> Email </th>
+  <th> Money </th>
+  <th> Access </th>
+</tr>
+
+<% for (user in users) { %>
+      <tr>
+        <td>
+            <%=  users[user].name %>
+        </td>
+        <td>
+            <%=  users[user].email %>
+        </td>
+        <td>
+            <%=  users[user].money %>
+        </td>
+        <td>
+            <%=  explain[users[user].access] %>
+        </td>
+      </tr>
+    <% } %>
+<table>

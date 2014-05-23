@@ -1,0 +1,29 @@
+<% var title = 'Table list' %>
+<% include head %>
+
+<table>
+<tr>
+  <th> Name </th>
+  <th> Stake </th>
+  <th> Timeout </th>
+  <th> Users </th>
+</tr>
+<% for (user in tables) { %>
+      <tr>
+        <td>
+	   <a href='/table<%= tables[user].id %>'>
+                <%= tables[user].id %>
+            </a>        
+	</td>
+        <td>
+            <%=  tables[user].stake %>
+        </td>
+        <td>
+            <%=  tables[user].timeout %>
+        </td>
+        <td>
+            <%=  tables[user].users.length %>
+        </td>
+      </tr>
+    <% } %>
+<table>
