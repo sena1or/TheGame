@@ -43,7 +43,6 @@ app.use(function(req, res, next) {
   next();
 });
 
-// dummy databases
 
 var users = {};
 var tables = {};
@@ -53,9 +52,6 @@ explain[-1] = 'baned';
 explain[0] = 'user'
 explain[1] = 'moderator';
 explain[2] = 'admin';
-
-// when you create a user, generate a salt
-// and hash the password ('foobar' is the pass here)
 
 
 function createUser(Uname, pass, access_, email)
@@ -78,6 +74,7 @@ function createTable(Tname, stake, timeout)
     tables[Tname].timeout = timeout;
     tables[Tname].counter = 0;
     tables[Tname].users = Array();
+    tables[Tname].lastWinner = "No game yet";
     setInterval(function()
     {
       console.log('Table played %s', Tname); 
@@ -87,7 +84,7 @@ function createTable(Tname, stake, timeout)
       {
 	var win = Math.floor(Math.random() * (tables[Tname].users.length));
 	users[tables[Tname].users[win].name].money += stake * tables[Tname].users.length * 0.99;
-	console.log('win -> %s', tables[Tname].users[win].name); 
+	tables[Tname].lastWinner = tables[Tname].users[win].name; 
       }
       tables[Tname].users = Array();
       
@@ -130,12 +127,11 @@ function restrict(req, res, access_level, next ) {
 
 
 app.get('/', function(req, res){
-  res.redirect('/login');
+  setAccess(req, res);
+  res.render('main');
 });
 
 app.get('/logout', function(req, res){
-  // destroy the user's session to log them out
-  // will be re-created next request
   req.session.destroy(function(){
     res.redirect('/');
   });
@@ -155,9 +151,6 @@ app.get('/login', function(req, res){
 });
 
 app.post('/login', function(req, res){
-  //for DEBUG
-  //req.body.username = 'test';
-  //req.body.password = 'test';
   authenticate(req.body.username, req.body.password, function(err, user){
     if (user) {
       if (user.access == BANED) {
@@ -165,12 +158,7 @@ app.post('/login', function(req, res){
 	res.redirect('login');
 	return ;
       }
-      // Regenerate session when signing in
-      // to prevent fixation
       req.session.regenerate(function(){
-        // Store the user's primary key
-        // in the session store to be retrieved,
-        // or in this case the entire user object
         req.session.user = user;
         req.session.success = 'Authenticated as ' + user.name
           + 'You have money =' + user.money 
@@ -266,23 +254,29 @@ app.get('/table:id', function(req, res){
     }
     else
     {
-      if( users[req.session.user.name].money < tables[req.params.id].stake){
-	req.session.error = ('not enough money');
-	res.redirect('back');
-      }
-      else
-      {
-	users[req.session.user.name].money -= tables[req.params.id].stake;
-	tables[req.params.id].users.push(req.session.user);
-	req.session.success = "You joined the table";
-	res.redirect('back');
-      }
+      //res.locals.tableId = req.params.id;
+      //res.locals.table = tables[req.params.id];
+      console.log(tables[req.params.id].stake + 'ololo');
+      res.render('table',{ table: tables[req.params.id], id: req.params.id});
     }
   });
 });
 
 app.post('/table', function(req, res){
-  console.log('Code ' + req);
+  console.log(req.body);
+  var tableId = req.body.id;
+  if( users[req.session.user.name].money < tables[tableId].stake){
+    req.session.error = ('not enough money');
+    res.redirect('back');
+  }
+  else
+  {
+    users[req.session.user.name].money -= tables[tableId].stake;
+    tables[tableId].users.push(req.session.user);
+    req.session.success = "You joined the table";
+    res.redirect('back');
+  }
+  
 });
 
 app.get('/users', function(req, res){

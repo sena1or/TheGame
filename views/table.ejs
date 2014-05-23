@@ -1,0 +1,33 @@
+<% var title = 'Table list' %>
+<% include head %>
+<%- message %>
+<table>
+<tr>
+  <th> Stake </th>
+  <th> Last Winner </th>
+  <th> Players </th>
+</tr>
+<tr>
+  <td>
+    <%= table.stake  %>
+  </td>
+  <td>
+    <%= table.lastWinner %>
+  </td>
+  <td>
+  <% for (pet in table.users) { %>
+      <%= table.users[pet].name %>,
+  <% } %>
+  </td>
+ </tr>
+</table>
+
+<script>
+  window.setTimeout("location.reload()", 5000);
+</script>
+<form method="post" action="/table">
+<p>
+  <input type = "hidden" id = "id" name = "id" value = <%= id %> >
+  <input type="submit" name "submit" value = 'Join'  >
+</p>
+</form>

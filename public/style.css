@@ -1,3 +1,7 @@
+body {
+  background-color:silver;
+}
+
 table { 
 width: 100%; /* Ширина таблицы */
 border: 4px double black; /* Рамка вокруг таблицы */
@@ -5,11 +9,19 @@ border-collapse: collapse; /* Отображать только одинарны
 }
 th { 
 text-align: left; /* Выравнивание по левому краю */
-background: #ccc; /* Цвет фона ячеек */
+background: #aaa; /* Цвет фона ячеек */
 padding: 5px; /* Поля вокруг содержимого ячеек */
 border: 1px solid black; /* Граница вокруг ячеек */
 }
 td { 
 padding: 5px; /* Поля вокруг содержимого ячеек */
 border: 1px solid black; /* Граница вокруг ячеек */
+}
+h1 {
+  font-family: 'Times New Roman', Times, serif; /* Гарнитура текста */ 
+  font-size: 250%; /* Размер шрифта в процентах */ 
+  } 
+p {
+  font-family: Verdana, Arial, Helvetica, sans-serif; 
+  font-size: 16pt; /* Размер шрифта в пунктах */ 
 }
